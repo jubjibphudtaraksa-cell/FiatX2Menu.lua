@@ -1,0 +1,156 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+
+-- Variables
+local targetWalkSpeed = 16
+local targetJumpPower = 50
+local infinityJumpEnabled = false
+local walkThroughEnabled = false
+
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- ==================== FiatX2 Menu ====================
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0,120,0,50)
+toggleButton.Position = UDim2.new(0,20,0,20)
+toggleButton.BackgroundColor3 = Color3.fromRGB(25,25,40)
+toggleButton.Text = ""
+toggleButton.Font = Enum.Font.SourceSansBold
+toggleButton.TextSize = 28
+toggleButton.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0,15)
+uiCorner.Parent = toggleButton
+
+local labelBlue = Instance.new("TextLabel")
+labelBlue.Size = UDim2.new(1,0,1,0)
+labelBlue.Position = UDim2.new(0,2,0,2)
+labelBlue.BackgroundTransparency = 1
+labelBlue.Text = "FiatX2"
+labelBlue.TextColor3 = Color3.fromRGB(0,170,255)
+labelBlue.Font = Enum.Font.SourceSansBold
+labelBlue.TextSize = 28
+labelBlue.Parent = toggleButton
+
+local labelWhite = Instance.new("TextLabel")
+labelWhite.Size = UDim2.new(1,0,1,0)
+labelWhite.Position = UDim2.new(0,0,0,0)
+labelWhite.BackgroundTransparency = 1
+labelWhite.Text = "FiatX2"
+labelWhite.TextColor3 = Color3.fromRGB(255,255,255)
+labelWhite.Font = Enum.Font.SourceSansBold
+labelWhite.TextSize = 28
+labelWhite.Parent = toggleButton
+
+-- ====================
+-- Menu Frame
+local menuFrame = Instance.new("Frame")
+menuFrame.Size = UDim2.new(0,320,0,500)
+menuFrame.Position = UDim2.new(0.5, -160, 0.5, -250)
+menuFrame.BackgroundColor3 = Color3.fromRGB(35,35,60)
+menuFrame.BorderSizePixel = 0
+menuFrame.Visible = false
+menuFrame.Parent = screenGui
+
+local menuCorner = Instance.new("UICorner")
+menuCorner.CornerRadius = UDim.new(0,10)
+menuCorner.Parent = menuFrame
+
+local shadow = Instance.new("UIStroke")
+shadow.Thickness = 2
+shadow.Transparency = 0.5
+shadow.Color = Color3.fromRGB(0,0,0)
+shadow.Parent = menuFrame
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1,0,0,50)
+titleBar.BackgroundColor3 = Color3.fromRGB(55,55,100)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = menuFrame
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1,0,1,0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "FiatX2 Menu"
+titleLabel.TextColor3 = Color3.fromRGB(255,255,255)
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.TextSize = 24
+titleLabel.Parent = titleBar
+
+-- Layout
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,10)
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Parent = menuFrame
+
+-- Toggle Menu
+toggleButton.MouseButton1Click:Connect(function()
+    menuFrame.Visible = not menuFrame.Visible
+end)
+
+-- ====================
+-- TextBox Function
+local function createNumberInput(labelText, defaultValue, setVar)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0,280,0,50)
+    frame.BackgroundTransparency = 1
+    frame.Parent = menuFrame
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0,120,0,50)
+    label.Position = UDim2.new(0,0,0,0)
+    label.Text = labelText
+    label.TextColor3 = Color3.fromRGB(255,255,255)
+    label.BackgroundTransparency = 1
+    label.Font = Enum.Font.SourceSansBold
+    label.TextSize = 18
+    label.Parent = frame
+
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(0,140,0,50)
+    box.Position = UDim2.new(0,130,0,0)
+    box.Text = tostring(defaultValue)
+    box.TextColor3 = Color3.fromRGB(0,0,0)
+    box.BackgroundColor3 = Color3.fromRGB(200,200,200)
+    box.Font = Enum.Font.SourceSansBold
+    box.TextSize = 18
+    box.ClearTextOnFocus = false
+    local boxCorner = Instance.new("UICorner")
+    boxCorner.CornerRadius = UDim.new(0,6)
+    boxCorner.Parent = box
+    box.Parent = frame
+
+    box.FocusLost:Connect(function()
+        local num = tonumber(box.Text)
+        if num then
+            setVar(num)
+        else
+            box.Text = tostring(defaultValue)
+        end
+    end)
+end
+
+createNumberInput("WalkSpeed", targetWalkSpeed, function(val) targetWalkSpeed = val end)
+createNumberInput("JumpPower", targetJumpPower, function(val) targetJumpPower = val end)
+
+-- ====================
+-- Button Function with Status Color & Animation
+local function createToggleButton(label, statusVar)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0,280,0,50)
+ 

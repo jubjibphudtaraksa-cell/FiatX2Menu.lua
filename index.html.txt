@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>FiatX2</title>
+</head>
+<body>
+<h1>FiatX2 เว็บขึ้นแล้ว</h1>
+</body>
+</html>

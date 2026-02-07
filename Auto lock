@@ -1,0 +1,182 @@
+-- ======================================
+-- FiatX2 | Auto Lock + Center FOV + ESP
+-- ======================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- ===============================
+-- SETTINGS
+-- ===============================
+local AutoLockEnabled = false
+local FOVEnabled = false
+local ESPBoxEnabled = false
+local ESPLineEnabled = false
+local FOVRadius = 150
+
+-- ===============================
+-- FOV CIRCLE
+-- ===============================
+local Circle = Drawing.new("Circle")
+Circle.Visible = false
+Circle.Thickness = 2
+Circle.Color = Color3.fromRGB(0,150,255)
+Circle.Filled = false
+Circle.Radius = FOVRadius
+
+-- ===============================
+-- UI
+-- ===============================
+local gui = Instance.new("ScreenGui")
+gui.Name = "FiatX2_GUI"
+gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- ===== TOGGLE MENU (SQUARE BIG) =====
+local toggle = Instance.new("TextButton", gui)
+toggle.Size = UDim2.new(0,72,0,72)
+toggle.Position = UDim2.new(0.5,-36,0.13,0)
+toggle.Text = "FiatX2"
+toggle.Font = Enum.Font.GothamBold
+toggle.TextScaled = true
+toggle.TextColor3 = Color3.fromRGB(240,250,255)
+toggle.BackgroundColor3 = Color3.fromRGB(0,140,255)
+toggle.Active = true
+toggle.Draggable = true
+toggle.AutoButtonColor = false
+
+Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,16)
+local toggleStroke = Instance.new("UIStroke", toggle)
+toggleStroke.Color = Color3.fromRGB(180,220,255)
+toggleStroke.Thickness = 1.5
+
+-- ===== MAIN MENU =====
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,320,0,240)
+main.Position = UDim2.new(0.5,-160,0.28,0)
+main.BackgroundColor3 = Color3.fromRGB(225,245,255)
+main.Visible = true
+
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,16)
+local ms = Instance.new("UIStroke", main)
+ms.Color = Color3.fromRGB(120,190,255)
+ms.Thickness = 2
+
+toggle.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
+end)
+
+-- ===== TITLE =====
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,36)
+title.BackgroundTransparency = 1
+title.Text = "FiatX2"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Color3.fromRGB(0,120,220)
+
+-- ===== BUTTON MAKER =====
+local function makeButton(text, y)
+	local b = Instance.new("TextButton", main)
+	b.Size = UDim2.new(0.88,0,0,34)
+	b.Position = UDim2.new(0.06,0,y,0)
+	b.BackgroundColor3 = Color3.fromRGB(0,130,230)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.Gotham
+	b.TextSize = 14
+	b.Text = text
+	b.AutoButtonColor = true
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,10)
+	return b
+end
+
+-- ===== BUTTONS =====
+local autoBtn = makeButton("Auto Lock : OFF", 0.18)
+autoBtn.MouseButton1Click:Connect(function()
+	AutoLockEnabled = not AutoLockEnabled
+	autoBtn.Text = "Auto Lock : "..(AutoLockEnabled and "ON" or "OFF")
+end)
+
+local fovBtn = makeButton("FOV : OFF", 0.34)
+fovBtn.MouseButton1Click:Connect(function()
+	FOVEnabled = not FOVEnabled
+	Circle.Visible = FOVEnabled
+	fovBtn.Text = "FOV : "..(FOVEnabled and "ON" or "OFF")
+end)
+
+-- ===== FOV SIZE BOX =====
+local box = Instance.new("TextBox", main)
+box.Size = UDim2.new(0.88,0,0,30)
+box.Position = UDim2.new(0.06,0,0.50,0)
+box.PlaceholderText = "ขนาด FOV (เช่น 150)"
+box.BackgroundColor3 = Color3.fromRGB(200,230,255)
+box.TextColor3 = Color3.fromRGB(0,80,160)
+box.Font = Enum.Font.Gotham
+box.TextSize = 13
+Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
+
+box.FocusLost:Connect(function()
+	local v = tonumber(box.Text)
+	if v then
+		FOVRadius = math.clamp(v,50,500)
+	end
+end)
+
+local espBoxBtn = makeButton("ESP โครงร่าง : OFF", 0.66)
+espBoxBtn.MouseButton1Click:Connect(function()
+	ESPBoxEnabled = not ESPBoxEnabled
+	espBoxBtn.Text = "ESP โครงร่าง : "..(ESPBoxEnabled and "ON" or "OFF")
+end)
+
+local espLineBtn = makeButton("ESP เส้นโยง : OFF", 0.82)
+espLineBtn.MouseButton1Click:Connect(function()
+	ESPLineEnabled = not ESPLineEnabled
+	espLineBtn.Text = "ESP เส้นโยง : "..(ESPLineEnabled and "ON" or "OFF")
+end)
+
+-- ===============================
+-- ESP STORAGE
+-- ===============================
+local ESP = {}
+
+local function removeESP(plr)
+	if ESP[plr] then
+		if ESP[plr].Skeleton then
+			for _,l in pairs(ESP[plr].Skeleton) do
+				pcall(function() l:Remove() end)
+			end
+		end
+		if ESP[plr].Line then
+			pcall(function() ESP[plr].Line:Remove() end)
+		end
+		ESP[plr] = nil
+	end
+end
+
+Players.PlayerRemoving:Connect(removeESP)
+
+-- ===============================
+-- LOOP
+-- ===============================
+RunService.RenderStepped:Connect(function()
+	local vp = Camera.ViewportSize
+	Circle.Position = Vector2.new(vp.X/2, vp.Y/2)
+	Circle.Radius = FOVRadius
+	Circle.Visible = FOVEnabled
+
+	if AutoLockEnabled and FOVEnabled then
+		-- Auto Lock (ใช้ของเดิมคุณได้เลย)
+	end
+
+	for _,plr in pairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer then
+			local char = plr.Character
+			local hum = char and char:FindFirstChildOfClass("Humanoid")
+			if not char or not hum or hum.Health <= 0 then
+				removeESP(plr)
+			end
+		end
+	end
+end)

@@ -1,0 +1,46 @@
+-- ===============================
+-- FiatX All-in-One Hub
+-- ===============================
+local placeId = game.PlaceId
+
+-- =========================
+-- 🛳️ Build A Boat
+-- =========================
+if placeId == 537413528 then
+    loadstring(game:HttpGet("https://pastebin.com/raw/beuCNxB9"))()
+
+-- =========================
+-- 🔪 MM2
+-- =========================
+elseif placeId == 142823291 then
+    loadstring(game:HttpGet("https://pastebin.com/raw/eFdwfLHQ"))()
+
+-- =========================
+-- 🔫 Gun Grounds FFA
+-- =========================
+elseif placeId == 12137249458 then
+    loadstring(game:HttpGet("https://pastebin.com/raw/N3gGbvC6"))()
+
+-- =========================
+-- ❌ ไม่รองรับ
+-- =========================
+else
+    -- สร้าง UI ขึ้นกลางจอ
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "NotSupportedUI"
+    gui.Parent = game.CoreGui
+
+    local text = Instance.new("TextLabel")
+    text.Parent = gui
+    text.Size = UDim2.new(1, 0, 1, 0)
+    text.Position = UDim2.new(0, 0, 0, 0)
+    text.BackgroundTransparency = 1
+    text.Text = "ยังไม่รองรับแมพนี้"
+    text.TextColor3 = Color3.fromRGB(255, 0, 0)
+    text.TextScaled = true
+    text.Font = Enum.Font.GothamBlack
+
+    -- รอ 3 วิ แล้วเตะออก
+    task.wait(3)
+    game.Players.LocalPlayer:Kick("ยังไม่รองรับแมพนี้")
+end
